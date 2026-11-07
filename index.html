@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Shape of Water · 관람 전 확인</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="box-diamond">
+  <!-- 1. 관람 등급 체크리스트 -->
+  <section id="check" class="screen on">
+    <div class="film" aria-hidden="true"><i class="flicker"></i><i class="scratch s1"></i><i class="scratch s2"></i><i class="dust"></i></div>
+    <div class="sheet">
+      <header class="head">
+        <p class="lead">This Film Contains the Following</p>
+        <p class="name">THE SHAPE OF <span class="k-wa">W</span><span class="k-at">A</span>TER</p>
+      </header>
+      <ul class="items" id="items"></ul>
+      <label class="all" id="all">
+        <input type="checkbox" id="all-box" disabled>
+        <span class="box"></span>
+        <span class="lead">I have read all of the above.</span>
+      </label>
+      <button type="button" class="leave" id="leave-btn">( Leave the theater )</button>
+      <p class="foot">VIEWER DISCRETION ADVISED<br>CERTIFICATE &#8470; 1962</p>
+    </div>
+  </section>
+
+  <!-- 2. 상영 시작 -->
+  <section id="screen" class="screen">
+    <div class="viewer"><div class="glow"></div><div class="pic">
+      <video id="v-screen" src="screen_2.mp4" playsinline preload="auto"></video>
+    </div><div class="marks"></div></div>
+  </section>
+
+  <!-- 3. 타이틀 -->
+  <section id="title" class="screen">
+    <div class="viewer"><div class="glow"></div><div class="pic">
+      <video id="v-water" src="water_1.mp4" playsinline loop preload="auto"></video>
+      <div id="title-img" role="img" aria-label="The Shape of Water">
+        <img class="t-top" src="title.png" alt=""><img class="t-bot" src="title.png" alt=""><i class="t-grain"></i>
+      </div>
+    </div><div class="marks"></div></div>
+  </section>
+
+  <!-- 나가기를 고른 경우 -->
+  <section id="leave" class="screen">
+    <p class="bye">The film will begin without you.</p>
+  </section>
+
+  <div class="grain" aria-hidden="true"></div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+:root {
+  --bg: #111;
+  --fg: #ededed;
+  --dim: #9a9a9a;
+  --fade: 1.2s;        /* 화면 전환 페이드 */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #000; color: var(--fg); overflow: hidden; }
+body { font-family: Pretendard, -apple-system, sans-serif; word-break: keep-all; }
+
+/* 화면 세 장: 겹쳐 두고 opacity 로 전환 */
+.screen { position: fixed; inset: 0; opacity: 0; pointer-events: none; transition: opacity var(--fade) ease; }
+.screen.on { opacity: 1; pointer-events: auto; }
+#check { background: var(--bg); display: grid; place-items: center; padding: 24px 16px; overflow-y: auto; }
+
+/* 필름 그레인 */
+.grain { position: fixed; inset: -50%; pointer-events: none; opacity: 0.16; animation: grain 0.6s steps(4) infinite;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+@keyframes grain { 0%{transform:translate(0,0)} 25%{transform:translate(-3%,2%)} 50%{transform:translate(2%,-3%)} 75%{transform:translate(-2%,-1%)} 100%{transform:translate(0,0)} }
+body.playing .grain { opacity: 0; transition: opacity var(--fade); }
+
+/* 체크리스트 화면 필름 효과: 가운데 빛, 깜빡임, 세로 스크래치, 먼지, 미세한 흔들림 */
+#check { background: radial-gradient(ellipse 70% 65% at 50% 48%, #1c1c1c 0%, #0e0e0e 55%, #030303 100%); }
+.film { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.film i { position: absolute; display: block; }
+.flicker { inset: 0; background: #fff; mix-blend-mode: overlay; animation: flicker 0.18s steps(1) infinite; }
+@keyframes flicker { 0%{opacity:.03} 20%{opacity:.07} 40%{opacity:.02} 60%{opacity:.06} 80%{opacity:.035} }
+.scratch { top: -5%; bottom: -5%; width: 1px; background: linear-gradient(transparent, rgba(255,255,255,.14) 20%, rgba(255,255,255,.05) 60%, transparent); filter: blur(.4px); }
+.s1 { left: 23%; animation: scratch 3.1s steps(1) infinite; }
+.s2 { left: 71%; width: 1px; opacity: .6; animation: scratch 4.7s steps(1) infinite 1.3s; }
+@keyframes scratch { 0%{opacity:.5;transform:translateX(0)} 8%{opacity:0} 34%{opacity:.35;transform:translateX(9px)} 39%{opacity:0} 63%{opacity:.4;transform:translateX(-14px)} 68%{opacity:0} 100%{opacity:0} }
+.dust { inset: 0; opacity: .5; animation: dust 0.5s steps(1) infinite;
+  background:
+    radial-gradient(circle at 18% 32%, rgba(255,255,255,.55) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 64% 78%, rgba(0,0,0,.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 22%, rgba(255,255,255,.4) 0 1px, transparent 2px),
+    radial-gradient(circle at 37% 61%, rgba(0,0,0,.7) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 52% 12%, rgba(255,255,255,.5) 0 .8px, transparent 1.6px); }
+@keyframes dust { 0%{transform:translate(0,0)} 25%{transform:translate(23vw,-17vh) rotate(90deg)} 50%{transform:translate(-31vw,12vh)} 75%{transform:translate(9vw,26vh) rotate(-60deg)} }
+@keyframes weave { 0%,100%{transform:translate(0,0)} 25%{transform:translate(.4px,-.6px)} 50%{transform:translate(-.3px,.5px)} 75%{transform:translate(.5px,.3px)} }
+@media (prefers-reduced-motion: reduce) { .flicker, .scratch, .dust, .sheet, .grain { animation: none; } }
+
+/* 체크리스트: 1940년대 엔딩 크레딧 카드 배치 (가운데 제목 · 왼쪽 항목 · 점 리더 · 오른쪽 대문자) */
+#check { font-family: "Goudy Bookletter 1911", Georgia, serif; }
+.sheet { position: relative; width: min(940px, 100%); text-align: center; color: #f2f2f2;
+  filter: blur(0.45px);
+  text-shadow: 0 0 1px rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.5), 0 0 18px rgba(255,255,255,0.25);
+  animation: weave 5s steps(40) infinite; }
+.sheet p { margin: 0; }
+.lead { font-size: 30px; letter-spacing: 0.01em; }
+.name { font-size: 30px; letter-spacing: 0.06em; margin-top: 4px !important; }
+.head { margin-bottom: 34px; }
+.items { list-style: none; margin: 0; padding: 0; text-align: left; }
+.item { display: flex; align-items: baseline; gap: 14px; padding: 7px 0; cursor: pointer; }
+.label { font-size: 25px; white-space: nowrap; line-height: 1.15; }
+.dots { flex: 1; min-width: 40px; height: 6px;
+  background: radial-gradient(circle, currentColor 1.2px, transparent 1.7px) 0 100% / 13px 6px repeat-x; }
+.desc { font-size: 18px; letter-spacing: 0.05em; text-transform: uppercase; text-align: right; white-space: nowrap; line-height: 1.2; }
+.desc small { font-size: 0.62em; letter-spacing: 0.08em; }
+
+/* 체크박스: body 클래스로 모양 고르기 — box-diamond(기본) · box-seal · box-bracket */
+input[type=checkbox] { position: absolute; opacity: 0; pointer-events: none; }
+.box { flex: none; position: relative; align-self: center; color: currentColor; transition: transform .25s ease; }
+
+/* 1. 다이아몬드: 이중선 마름모, 체크하면 안쪽이 채워짐 */
+.box-diamond .box { width: 16px; height: 16px; margin: 0 3px; transform: rotate(45deg);
+  border: 1px solid currentColor; box-shadow: 0 0 6px rgba(255,255,255,0.3); }
+.box-diamond .box::before { content: ""; position: absolute; inset: 2px; border: 1px solid currentColor; opacity: .55; }
+.box-diamond input:checked + .box::after { content: ""; position: absolute; inset: 4px; background: currentColor; box-shadow: 0 0 8px #fff; }
+
+/* 2. 인장: 이중 원, 체크하면 별표가 찍힘 (레퍼런스 오른쪽 아래 심의 마크처럼) */
+.box-seal .box { width: 22px; height: 22px; border-radius: 50%; border: 1px solid currentColor; box-shadow: 0 0 6px rgba(255,255,255,0.3); }
+.box-seal .box::before { content: ""; position: absolute; inset: 2px; border-radius: 50%; border: 1px solid currentColor; opacity: .55; }
+.box-seal input:checked + .box::after { content: "\2726"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; line-height: 1; text-shadow: 0 0 6px #fff; }
+
+/* 3. 괄호: 타자기 ( ) 사이에 × 가 찍힘 */
+.box-bracket .box { width: 26px; height: 22px; font-size: 22px; line-height: 22px; text-align: center; }
+.box-bracket .box::before { content: "(\2009\2009\2009)"; position: absolute; inset: 0; letter-spacing: 0.02em; }
+.box-bracket input:checked + .box::after { content: "\00D7"; position: absolute; inset: 0; text-align: center; }
+
+.all { display: inline-flex; gap: 14px; align-items: baseline; margin-top: 40px; cursor: pointer; }
+.all .lead { font-size: 26px; }
+.all:has(input:disabled) { cursor: default; }
+.foot { margin-top: 22px !important; font-size: 13px; letter-spacing: 0.12em; line-height: 1.5; }
+
+/* 영상: 뷰파인더/영사 화면처럼 작게, 가장자리 흐릿하게 번지는 빛 */
+#screen, #title { background: radial-gradient(ellipse 70% 65% at 50% 48%, #1c1c1c 0%, #0e0e0e 55%, #030303 100%); display: grid; place-items: center; }
+.viewer { position: relative; width: min(72vw, 112vh); aspect-ratio: 16 / 9; }
+.glow { position: absolute; inset: 4%; border-radius: 6%; background: rgba(205, 215, 225, 0.55); filter: blur(60px); opacity: var(--glow, 0.5); }
+.pic { position: absolute; inset: 0; border-radius: 5% / 8%; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 13%, #000 87%, transparent);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 13%, #000 87%, transparent); mask-composite: intersect; }
+.pic video { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(var(--soft, 0.8px)) brightness(1.12) contrast(0.88) saturate(0.85); }
+.pic::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.12) 65%, rgba(0,0,0,0.4) 100%); pointer-events: none; }
+/* 프레이밍 표시 (레퍼런스의 모서리선). 끄려면 --marks: 0 */
+.marks { position: absolute; inset: 9% 7%; pointer-events: none; opacity: var(--marks, 0.5);
+  background:
+    linear-gradient(#e8d9a8,#e8d9a8) 50% 0 / 60% 2px no-repeat,
+    linear-gradient(#e8d9a8,#e8d9a8) 50% 100% / 60% 2px no-repeat,
+    linear-gradient(#e8d9a8,#e8d9a8) 0 50% / 2px 45% no-repeat,
+    linear-gradient(#e8d9a8,#e8d9a8) 100% 50% / 2px 45% no-repeat;
+  filter: blur(0.6px); }
+
+/* 타이틀 */
+#title-img { position: absolute; left: 50%; top: 50%; width: 70%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 2s ease 0.6s; }
+#title.on #title-img { opacity: 1; }
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .label { font-size: 22px; }
+  .desc { font-size: 15px; }
+}
+@media (max-width: 760px) {
+  .lead, .name { font-size: 22px; }
+  .item { flex-wrap: wrap; }
+  .label { font-size: 20px; }
+  .dots { display: none; }
+  .desc { white-space: normal; width: 100%; text-align: left; font-size: 15px; padding-left: 32px; }
+  .all .lead { font-size: 19px; }
+}
+
+/* 타이틀 화면에는 프레이밍 선 없음 */
+#title .marks, #screen .marks { display: none; }
+
+/* 타이틀 글자: 체크리스트와 같은 빛 번짐 + 미세한 흔들림, 물 영상은 조금 어둡게 */
+#title-img { animation: weave-t 5s steps(40) infinite; }
+@keyframes weave-t { 0%,100%{translate:0 0} 25%{translate:.4px -.6px} 50%{translate:-.3px .5px} 75%{translate:.5px .3px} }
+#v-water { filter: blur(var(--soft, 0.8px)) brightness(0.82) contrast(0.9) saturate(0.85); }
+@media (prefers-reduced-motion: reduce) { #title-img { animation: none; } }
+
+/* WATER 커닝: W-A, A-T 사이 좁히기 */
+.name { font-kerning: normal; }
+.k-wa { margin-right: -0.09em; }
+.k-at { margin-right: -0.06em; }
+
+/* 타이틀 이미지 위(Shape of water)·아래(로고·크레딧)를 나눠서 다르게: 위는 더 어둡고 번지게 */
+#title-img img { display: block; width: 100%; }
+.t-top { -webkit-mask: linear-gradient(#000 46%, transparent 54%); mask: linear-gradient(#000 46%, transparent 54%);
+  filter: brightness(0.8) contrast(0.94) blur(0.7px) drop-shadow(0 0 2px rgba(255,255,255,0.5)) drop-shadow(0 0 7px rgba(255,255,255,0.22)); }
+.t-bot { position: absolute; inset: 0; -webkit-mask: linear-gradient(transparent 46%, #000 54%); mask: linear-gradient(transparent 46%, #000 54%);
+  filter: brightness(0.88) blur(0.45px) drop-shadow(0 0 1px rgba(255,255,255,0.7)) drop-shadow(0 0 6px rgba(255,255,255,0.3)); }
+/* 글자 안에만 필름 그레인 (title.png 모양으로 마스크) */
+.t-grain { position: absolute; inset: 0; pointer-events: none; opacity: 0.22;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.1 -0.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  -webkit-mask: url(title.png) 0 0 / 100% 100% no-repeat; mask: url(title.png) 0 0 / 100% 100% no-repeat;
+  animation: t-grain 0.5s steps(1) infinite; }
+@keyframes t-grain { 0%{background-position:0 0} 25%{background-position:-60px 40px} 50%{background-position:50px -70px} 75%{background-position:-30px -20px} }
+@media (prefers-reduced-motion: reduce) { .t-grain { animation: none; } }
+
+/* screen_2 노란 기 빼기: 흑백으로 바꾼 뒤 물 영상처럼 아주 살짝 청회색 */
+#v-screen { filter: blur(var(--soft, 0.8px)) grayscale(1) sepia(0.12) hue-rotate(160deg) saturate(0.9) brightness(0.72) contrast(0.92); }
+#screen .glow { background: rgba(200, 210, 215, 0.5); }
+
+/* 영상 주변 빛 번짐 약하게 (배경이 밝아져서 가장자리가 회색으로 떠 보이던 것) */
+#screen .glow, #title .glow { background: rgba(170, 180, 185, 0.5); opacity: 0.22; }
+
+/* 나가기 */
+.leave { display: block; margin: 18px auto 0; padding: 4px 8px; background: none; border: 0; color: inherit; cursor: pointer;
+  font: inherit; font-size: 15px; letter-spacing: 0.08em; text-shadow: inherit; }
+#leave { background: radial-gradient(ellipse 70% 65% at 50% 48%, #141414 0%, #090909 55%, #020202 100%); display: grid; place-items: center; padding: 16px; }
+.bye { margin: 0; font-family: "Goudy Bookletter 1911", Georgia, serif; font-size: clamp(20px, 3vw, 30px); text-align: center; color: #e6e6e6;
+  filter: blur(0.45px); text-shadow: 0 0 1px rgba(255,255,255,0.9), 0 0 6px rgba(255,255,255,0.45), 0 0 18px rgba(255,255,255,0.2);
+  opacity: 0; transition: opacity 2.4s ease 1.2s; }
+#leave.on .bye { opacity: 1; }
